@@ -21,7 +21,7 @@ pipeline {
 
     stage('test') {
       steps {
-        container('docker') {
+        container('docker-compose') {
           sh "docker-compose -f docker-compose.test.yml up -d && docker wait ci-schema-migration && docker logs ci-schema-migration"
           // sh "cd tests && ./restore-database.sh"
           // sh "docker-compose exec newman newman run /opt/tests/bruce_v2.postman_collection.json --environment /opt/tests/test.postman_environment.json --iteration-count 1"
