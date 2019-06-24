@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  # we'll use this database for testing...
+  mysql:
+    image: mysql:5
+    hostname: mysql
+    container_name: ci-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "welcome1"
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-pwelcome1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # system under test!
+  schema-migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - ./config:/opt/app/config:ro
+    - ./tests:/opt/app/tests:ro
+    entrypoint: /opt/app/wait-for-it.sh
+    command: "mysql:3306 -s --timeout=30 -- pytest -x -s"
+    # entrypoint: cat /opt/app/model/database.py
+    # tty: True
+    # command: "-x -s"
+    container_name: ci-schema-migration
+    environment:
+      PYTHONPATH: /opt/app
+      MYSQL_HOSTNAME: mysql
+      MYSQL_PASSWORD: welcome1
+      MYSQL_USERNAME: root
+      MYSQL_PORT: 3306
+    links:
+    - mysql
+    restart: on-failure
+    depends_on:
+      - mysql
