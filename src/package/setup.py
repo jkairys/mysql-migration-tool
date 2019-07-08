@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="migration_tool",
-    version="0.0.1",
+    version="0.1.0",
     author="Jethro Kairys",
     author_email="jethro.kairys@gmail.com",
     description="A database schema migration tool for MYSQL",
     long_description=long_description,
     long_description_content_type="text/markdown",
     # url="file://",
-    # url="https://github.com/jkairys/db-migration-tool",
+    url="https://github.com/jkairys/db-migration-tool",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
