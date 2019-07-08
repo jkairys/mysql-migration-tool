@@ -1,7 +1,7 @@
 import re
 import logging
 logger = logging.getLogger("migrate.sql-file")
-
+import os
 
 class SQLFile:
     path = None
@@ -11,6 +11,9 @@ class SQLFile:
         self.path = path
         content = self.load_content(self.path)
         self.statements = self.parse_content(content)
+
+    def version_from_name(self):
+        return os.path.basename(self.path).replace('.sql', '')
 
     @staticmethod
     def load_content(path):

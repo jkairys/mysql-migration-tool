@@ -1,18 +1,18 @@
-from controller.schema_controller import SchemaController
-from model.migration_file import MigrationFile
+from .schema_controller import SchemaController
+from ..model.migration_file import MigrationFile
 import logging
 logger = logging.getLogger("migrate.db-migrator")
 
 
 class DBMigrator:
-    _database = None
 
-    def __init__(self, database, schema_name, migrations):
-        self._database = database
-        self._schema = SchemaController(db=database, schema_name=schema_name)
+    _schema: SchemaController = None
+
+    def __init__(self, schema: SchemaController, migrations: str):
+        self._schema = schema
         self._migrations = MigrationFile.discover(migrations)
 
-    def run_migrations(self):
+    def run_migrations(self, to_version=None):
         logger.info("Checking if schema exists")
         exists = self._schema.exists()
 
@@ -32,7 +32,11 @@ class DBMigrator:
         results = dict()
         failed = False
         for m in self._migrations:
-            if not m.version.is_greater_than(version) or failed:
+            if (
+                (not m.version.is_greater_than(version))
+                or failed
+                or (to_version is not None and m.version.is_greater_than(to_version))
+            ):
                 results[str(m.version)] = "SKIP"
                 continue
 
@@ -53,7 +57,7 @@ class DBMigrator:
 
         try:
             for s in migration.sql_file.statements:
-                self._database.execute(s)
+                self._schema.execute(s)
 
             self._schema.set_version(migration.version)
             return True, None

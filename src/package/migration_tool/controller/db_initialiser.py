@@ -1,16 +1,14 @@
-from model.database import Database
-from controller.schema_controller import SchemaController
+from ..model.sql_file import SQLFile
+from .schema_controller import SchemaController
 import logging
-from model.sql_file import SQLFile
 logger = logging.getLogger("migrate.db-initialise")
 
 
 class DBInitialiser:
-    _database = None
+    _schema: SchemaController = None
 
-    def __init__(self, database: Database, schema_name, seed_file):
-        self._database = database
-        self._schema = SchemaController(db=database, schema_name=schema_name)
+    def __init__(self, schema: SchemaController, seed_file):
+        self._schema = schema
         self._seed_file = seed_file
 
     def run(self):
@@ -33,21 +31,28 @@ class DBInitialiser:
 
         logger.info(f"Executing {len(sql_file.statements)} statements in seed file")
         for s in sql_file.statements:
-            self._database.execute(s)
+            self._schema.execute(s)
 
-        self._database.commit()
+        self._schema.commit()
 
         logger.info("Seed file execution complete.")
 
         # Determine the version of the schema
         version = self._schema.version()
+
+        if version is None:
+            initial_version = sql_file.version_from_name()
+            logger.info(f'Setting initial version to {initial_version} based on seed file name')
+            self._schema.set_version(initial_version)
+            # get updated version from db
+            version = self._schema.version()
+
         logger.info(f"Deployed schema '{self._schema.name()}' is currently at version '{version}'")
 
         return version
-
 
     # drop existing schema
     def drop(self):
         logger.warning(f"Dropping schema '{self._schema.name()}'")
         self._schema.drop()
-        self._database.commit()
+        self._schema.commit()

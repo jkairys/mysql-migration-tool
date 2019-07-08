@@ -1,12 +1,14 @@
-from controller.db_initialiser import DBInitialiser
-from model.database import Database
+from package.migration_tool.controller.schema_controller import SchemaController
+from package.migration_tool.controller.db_initialiser import DBInitialiser
+from package.migration_tool.model.database import Database
 
 
-def test_initialise(database: Database):
-    initialiser = DBInitialiser(database=database, schema_name='pytest', seed_file='config/seed/simple.sql')
+def test_initialise(database: Database, schema: SchemaController):
+    initialiser = DBInitialiser(schema=schema, seed_file='config/seed/simple.sql')
 
     # Drop schema if it exists
-    initialiser.drop()
+    if schema.exists():
+        initialiser.drop()
 
     # Apply initialisation
     version = initialiser.run()

@@ -1,4 +1,4 @@
-from model.sql_file import SQLFile
+from package.migration_tool.model.sql_file import SQLFile
 
 
 def test_parse():

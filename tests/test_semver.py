@@ -1,5 +1,5 @@
 import pytest
-from model.migration_file import SemVer
+from package.migration_tool.model.migration_file import SemVer
 
 
 def test_semver_parse():

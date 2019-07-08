@@ -1,11 +1,12 @@
-from model.database_schema import DatabaseSchema
+from ..model.database_schema import DatabaseSchema
+from ..model.database import Database
 import logging
 logger = logging.getLogger("migrate.schema-controller")
 
 
 class SchemaController:
-    schema = None
-    db = None
+    schema: DatabaseSchema = None
+    db: Database = None
 
     def __init__(self, db, schema_name):
         self.db = db
@@ -27,13 +28,21 @@ class SchemaController:
         else:
             return False
 
+    def execute(self, sql, autouse=True):
+        if autouse:
+            self.use()
+        self.db.execute(sql)
+
+    def commit(self):
+        self.db.commit()
+
     def create(self):
         logger.info(f"Creating schema: {self.schema.name}")
-        self.db.execute(f"create database {self.schema.name}")
+        self.execute(f"create database {self.schema.name}", autouse=False)
 
     def drop(self):
         logger.info(f"Dropping schema: {self.schema.name}")
-        self.db.execute(f"drop database {self.schema.name}")
+        self.execute(f"drop database {self.schema.name}")
 
     def use(self):
         self.db.execute(f"use {self.schema.name}")
@@ -53,11 +62,11 @@ class SchemaController:
             return None
 
     def create_version_table(self):
-        self.db.execute(
+        self.execute(
             f"CREATE TABLE `{self.schema.name}`.`schema_version` (`version` VARCHAR(32) NOT NULL)"
         )
 
     def set_version(self, version):
-        self.db.execute('delete from schema_version')
-        self.db.execute(f'insert into schema_version (version) values ("{version}")')
+        self.execute('delete from schema_version')
+        self.execute(f'insert into schema_version (version) values ("{version}")')
         self.db.commit()

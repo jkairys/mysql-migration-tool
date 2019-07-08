@@ -1,7 +1,7 @@
 import os
 import glob
 import logging
-from model.sql_file import SQLFile
+from .sql_file import SQLFile
 import functools
 
 logger = logging.getLogger('migrate.migration-file')
